@@ -1,20 +1,24 @@
 from flask import Flask, render_template
-from Adafruit_IO import MQTTClient, Client, Data
+from flask_socketio import SocketIO, send
+from Adafruit_IO import MQTTClient, Client
 import sys
 
 
-AIO_FEED_ID = "bbc-temp"
+# SOCKET INIT
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'a_secret'
+socketio = SocketIO(app)
+
+
+AIO_FEED_IDS = ["bbc-temp"]
 AIO_USERNAME = "toilaaihcmut"
 AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 
 
 def connected(client):
     print("Ket noi thanh cong...")
-    client.subscribe(AIO_FEED_ID)
-
-
-def subscribe(client, userdata, mid, granted_qos):
-    print("Subscribe thanh cong...")
+    for feed in AIO_FEED_IDS:
+        client.subscribe(feed)
 
 
 def disconnected(client):
@@ -22,12 +26,18 @@ def disconnected(client):
     sys.exit(1)
 
 
+def subscribe(client, userdata, mid, granted_qos):
+    print("Subscribe thanh cong...")
+
+# EMIT NEW DATA TO SOCKETS
 def message(client, feed_id, payload):
-    print("Nhan du lieu: " + payload)
-    # Gửi xuống react, render được
-    # Socket
+    print("Nhan du lieu: " + payload + " tu " + feed_id)
+
+    # "Broadcast" payload from feed_id to feed_id listeners
+    socketio.emit(feed_id, payload)
 
 
+# MQTT CLIENT INIT
 client = MQTTClient(AIO_USERNAME, AIO_KEY)
 client.on_connect = connected
 client.on_disconnect = disconnected
@@ -36,33 +46,36 @@ client.on_subscribe = subscribe
 client.connect()
 client.loop_background()
 
-aio = Client(AIO_USERNAME, AIO_KEY)
 
-
-app = Flask(__name__)
+# Reserved keywords for events: connect, disconnect, message, json
+@socketio.on('connect')
+def initialize_socket():
+    send("Successfully connected")
 
 
 @app.route('/')
 def index():
-    return '<a href="/dashboard">Go to dashboard</a>'
+    # Depend on client info, we give them the feed_id
+    return render_template('index.html',
+                           hostname='localhost',
+                           port='5000',
+                           sub_to_feed_id=AIO_FEED_IDS[0])
+
+
+# REST CLIENT INIT
+aio = Client(AIO_USERNAME, AIO_KEY)
 
 
 @app.route('/dashboard')
 def test():
-    name = 'Temp'
-    data = {}
-    data['temp'] = aio.data("bbc-temp")
-    data['humid'] = aio.data("bbc-humid")
-    data['light'] = aio.data("bbc-temp1")
-    temp = [float(d.value) for d in data['temp']]
-    temp = temp[:100]
-    humid = [float(d.value) for d in data['humid']]
-    humid = humid[:100]
-    light = [float(d.value) for d in data['light']]
-    light = light[:100]
+    nval = 100
+    temp = [float(d.value) for d in aio.data("bbc-temp")][:nval]
+    humid = [float(d.value) for d in aio.data("bbc-humid")][:nval]
+    light = [float(d.value) for d in aio.data("bbc-temp1")][:nval]
 
-    return render_template('index.html', **locals())
+    return render_template('dashboard.html', **locals())
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    socketio.run(app)

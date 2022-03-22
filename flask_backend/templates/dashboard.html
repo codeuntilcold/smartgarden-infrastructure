@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+
+</head>
+<body>
+
+<h3>
+    Temp and humid
+</h3>
+<canvas id="dht11" style="width:100%;max-width:700px"></canvas>
+
+<br>
+<br>
+
+<h3>
+    Light intensity
+</h3>
+<canvas id="light" style="width:100%;max-width:700px"></canvas>
+
+<script>
+var xValues = [];
+for (let i=0; i<100; i++) {
+    xValues.push(i)
+}
+var temps = {{ temp }};
+var humids = {{ humid }};
+var lights = {{ light }};
+
+new Chart("dht11", {
+  type: "line",
+  data: {
+    labels: xValues,
+    datasets: [{
+      fill: false,
+      lineTension: 0,
+      backgroundColor: "rgba(0,0,255,1.0)",
+      borderColor: "rgba(0,0,255,0.1)",
+      data: temps
+    },
+    {
+      fill: false,
+      lineTension: 0,
+      backgroundColor: "rgba(0,255,0,1.0)",
+      borderColor: "rgba(0,255,0,0.1)",
+      data: humids
+    },
+    ]
+  },
+  options: {
+    legend: {display: false},
+    scales: {
+      yAxes: [{ticks: {min: 20, max:100}}],
+    }
+  }
+});
+
+new Chart("light", {
+  type: "line",
+  data: {
+    labels: xValues,
+    datasets: [{
+      fill: false,
+      lineTension: 0,
+      backgroundColor: "rgba(0,255,255,1.0)",
+      borderColor: "rgba(0,255,255,0.1)",
+      data: lights
+    },
+    ]
+  },
+  options: {
+    legend: {display: false},
+    scales: {
+      yAxes: [{ticks: {min: 0, max:600}}],
+    }
+  }
+});
+</script>
+
+
+</body>
+</html>

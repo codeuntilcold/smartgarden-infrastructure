@@ -3,36 +3,42 @@ from Adafruit_IO import MQTTClient
 import random
 import time
 import serial.tools.list_ports
+import json
 
-AIO_FEED_IDS = ["bbc-led", "bbc-pump"]
+AIO_FEED_IDS = ["bbc-test-json"]
 AIO_USERNAME = "toilaaihcmut"
 AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 
 
-def  connected(client):
+def connected(client):
     print("Ket noi thanh cong...")
     for feed in AIO_FEED_IDS:
         client.subscribe(feed)
 
-def  subscribe(client , userdata , mid , granted_qos):
+
+def subscribe(client, userdata, mid, granted_qos):
     print("Subcribe thanh cong...")
 
-def  disconnected(client):
+
+def disconnected(client):
     print("Ngat ket noi...")
-    sys.exit (1)
+    sys.exit(1)
 
-def  message(client , feed_id , payload):
+
+def message(client, feed_id, payload):
     print("Nhan du lieu: " + payload)
-    if isMicrobitConnected:
-        ser.write((str(payload) + "#").encode())
+    # if isMicrobitConnected:
+    #     ser.write((str(payload) + "#").encode())
 
-client = MQTTClient(AIO_USERNAME , AIO_KEY)
+
+client = MQTTClient(AIO_USERNAME, AIO_KEY)
 client.on_connect = connected
 client.on_disconnect = disconnected
 client.on_message = message
 client.on_subscribe = subscribe
 client.connect()
 client.loop_background()
+
 
 def getPort():
     ports = serial.tools.list_ports.comports()
@@ -46,9 +52,10 @@ def getPort():
             commPort = (splitPort[0])
     return commPort
 
+
 isMicrobitConnected = False
 if getPort() != "None":
-    ser = serial.Serial( port=getPort(), baudrate=115200)
+    ser = serial.Serial(port=getPort(), baudrate=115200)
     isMicrobitConnected = True
 
 
@@ -70,7 +77,10 @@ def processData(data):
     except:
         pass
 
+
 mess = ""
+
+
 def readSerial():
     bytesToRead = ser.inWaiting()
     if (bytesToRead > 0):
@@ -85,8 +95,22 @@ def readSerial():
             else:
                 mess = mess[end+1:]
 
-while True:
-    if isMicrobitConnected:
-        readSerial()
 
+# function to test publish json to only one feed
+def test_post_json():
+    arr = {}
+    value = random.randint(0, 100)
+    print("Cap nhat:", value)
+    arr["temp"] = value
+    arr["humid"] = value
+    arr["light"] = value
+
+    if len(arr) == 3:
+        client.publish("bbc-test-json", json.dumps(arr))
+
+
+while True:
+    # if isMicrobitConnected:
+    #     readSerial()
+    test_post_json()
     time.sleep(1)

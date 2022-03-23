@@ -113,4 +113,4 @@ while True:
     # if isMicrobitConnected:
     #     readSerial()
     test_post_json()
-    time.sleep(1)
+    time.sleep(5)

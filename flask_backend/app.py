@@ -8,7 +8,7 @@ import json
 # SOCKET INIT
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a_secret'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins='*')
 
 
 AIO_FEED_IDS = ["bbc-test-json"]
@@ -69,29 +69,12 @@ aio = Client(AIO_USERNAME, AIO_KEY)
 
 @app.route('/dashboard')
 def test():
-
-    name = 'Temp'
     data = {}
     data['test'] = aio.data("bbc-test-json")
 
     temp = [float(json.loads(d.value)['temp']) for d in data['test']]
     humid = [float(json.loads(d.value)['humid']) for d in data['test']]
     light = [float(json.loads(d.value)['light']) for d in data['test']]
-
-    # data['temp'] = aio.data("bbc-temp")
-    # data['humid'] = aio.data("bbc-humid")
-    # data['light'] = aio.data("bbc-temp1")
-    # temp = [float(d.value) for d in data['temp']]
-    # temp = temp[:100]
-    # humid = [float(d.value) for d in data['humid']]
-    # humid = humid[:100]
-    # light = [float(d.value) for d in data['light']]
-    # light = light[:100]
-
-    # nval = 100
-    # temp = [float(d.value) for d in aio.data("bbc-temp")][:nval]
-    # humid = [float(d.value) for d in aio.data("bbc-humid")][:nval]
-    # light = [float(d.value) for d in aio.data("bbc-temp1")][:nval]
 
     return render_template('dashboard.html', **locals())
 

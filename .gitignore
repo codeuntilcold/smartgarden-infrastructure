@@ -110,6 +110,11 @@ ENV/
 env.bak/
 venv.bak/
 
+flask_backend/venv/
+flask_backend/.idea/
+python_IOT_Gateway/venv/
+python_IOT_Gateway/.idea/
+
 # Spyder project settings
 .spyderproject
 .spyproject

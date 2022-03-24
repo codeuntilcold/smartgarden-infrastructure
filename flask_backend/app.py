@@ -79,6 +79,3 @@ def test():
     return render_template('dashboard.html', **locals())
 
 
-if __name__ == '__main__':
-    # app.run(debug=True)
-    socketio.run(app)

@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify, abort
 from flask_socketio import SocketIO, send
 from Adafruit_IO import MQTTClient, Client
 import sys
@@ -77,6 +77,56 @@ def test():
     light = [float(json.loads(d.value)['light']) for d in data['test']]
 
     return render_template('dashboard.html', **locals())
+
+
+# Get full data on the feed
+@app.route('/history/<string:feed_key>')
+def get_history_data(feed_key):
+    if feed_key == "bbc-test-json":
+        time = [d.created_at for d in aio.data("bbc-test-json")]
+        response_data = [json.loads(d.value) for d in aio.data("bbc-test-json")]
+        for i in range(len(response_data)):
+            response_data[i]["time"] = time[i]
+    elif feed_key == "bbc-led":
+        time = [d.created_at for d in aio.data("bbc-led")]
+        response_data = [{"value": d.value} for d in aio.data("bbc-led")]
+        for i in range(len(response_data)):
+            response_data[i]["time"] = time[i]
+    return jsonify(response_data[:100])
+
+
+# Get a number of rows data on feed (use to load graph when in sensor page)
+@app.route('/history/<string:feed_key>/<int:num_rows>')
+def get_history_data_with_num_rows(feed_key, num_rows):
+    if feed_key == "bbc-test-json":
+        time = [d.created_at for d in aio.data("bbc-test-json")]
+        response_data = [json.loads(d.value) for d in aio.data("bbc-test-json")]
+        for i in range(len(response_data)):
+            response_data[i]["time"] = time[i]
+    elif feed_key == "bbc-led":
+        time = [d.created_at for d in aio.data("bbc-led")]
+        response_data = [{"value": d.value} for d in aio.data("bbc-led")]
+        for i in range(len(response_data)):
+            response_data[i]["time"] = time[i]
+    return jsonify(response_data[:num_rows])
+
+
+# Get the latest value of all sensor
+@app.route('/current')
+def get_current_sensor_data():
+    response_data = json.loads(aio.data("bbc-test-json")[0].value)
+    response_data["time"] = aio.data("bbc-test-json")[0].created_at
+    return jsonify(response_data)
+
+
+# Control device <bbc-led: control light; bbc-pump: control pump> (status: 0 - OFF, 1 - ON)
+@app.route('/control/<string:feed_key>/<int:status>', methods=["POST"])
+def control_device(feed_key, status):
+    try:
+        client.publish(feed_key, status)
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+    except:
+        return abort(404)
 
 
 if __name__ == '__main__':

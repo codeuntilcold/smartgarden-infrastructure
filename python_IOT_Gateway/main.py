@@ -78,6 +78,30 @@ def processData(data):
         pass
 
 
+N_SENSORS = 2
+n_recv = 0
+curr_data = dict()
+
+def processDataToJson(data):
+    data = data.replace("!", "")
+    data = data.replace("#", "")
+    splitData = data.split(":")
+    print(splitData)
+    try:
+        if splitData[1] == "TEMP" and splitData[2] == "HUMI":
+            curr_data["temp"] = splitData[3]
+            curr_data["humid"] = splitData[4]
+        elif splitData[1] == "LIGHT":
+            curr_data["light"] = splitData[2]
+    except:
+        return
+
+    if n_recv < N_SENSORS:
+        n_recv += 1
+    else:
+        n_recv = 0
+        client.publish(AIO_FEED_IDS[0], json.dumps(curr_data))
+
 mess = ""
 
 

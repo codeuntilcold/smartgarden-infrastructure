@@ -112,6 +112,7 @@ venv.bak/
 
 flask_backend/venv/
 flask_backend/.idea/
+flask_backend/__pycache__
 python_IOT_Gateway/venv/
 python_IOT_Gateway/.idea/
 

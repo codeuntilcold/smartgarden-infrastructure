@@ -96,6 +96,7 @@ def processDataToJson(data):
     except:
         return
 
+    global n_recv
     n_recv += 1
     if n_recv >= N_SENSORS:
         n_recv = 0

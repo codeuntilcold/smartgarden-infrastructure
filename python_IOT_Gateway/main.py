@@ -96,9 +96,8 @@ def processDataToJson(data):
     except:
         return
 
-    if n_recv < N_SENSORS:
-        n_recv += 1
-    else:
+    n_recv += 1
+    if n_recv >= N_SENSORS:
         n_recv = 0
         client.publish(AIO_FEED_IDS[0], json.dumps(curr_data))
 

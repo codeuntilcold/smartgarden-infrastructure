@@ -3,7 +3,8 @@ from flask_socketio import SocketIO, send
 from Adafruit_IO import MQTTClient, Client
 import sys
 import json
-
+from datetime import datetime
+from pytz import timezone
 
 # SOCKET INIT
 app = Flask(__name__)
@@ -11,7 +12,7 @@ app.config['SECRET_KEY'] = 'a_secret'
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 
-AIO_FEED_IDS = ["bbc-test-json"]
+AIO_FEED_IDS = ["bbc-test-json", "bbc-led"]
 AIO_USERNAME = "toilaaihcmut"
 AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 
@@ -66,7 +67,6 @@ def index():
 # REST CLIENT INIT
 aio = Client(AIO_USERNAME, AIO_KEY)
 
-
 @app.route('/dashboard')
 def test():
     data = {}
@@ -82,40 +82,61 @@ def test():
 # Get full data on the feed
 @app.route('/history/<string:feed_key>')
 def get_history_data(feed_key):
-    if feed_key == "bbc-test-json":
-        time = [d.created_at for d in aio.data("bbc-test-json")]
-        response_data = [json.loads(d.value) for d in aio.data("bbc-test-json")]
-        for i in range(len(response_data)):
-            response_data[i]["time"] = time[i]
-    elif feed_key == "bbc-led":
-        time = [d.created_at for d in aio.data("bbc-led")]
-        response_data = [{"value": d.value} for d in aio.data("bbc-led")]
-        for i in range(len(response_data)):
-            response_data[i]["time"] = time[i]
-    return jsonify(response_data[:100])
+    response_data = {}
+    if feed_key == AIO_FEED_IDS[0]:
+        response_data["time"] = [d.created_at for d in aio.data(AIO_FEED_IDS[0])]
+        value = [json.loads(d.value) for d in aio.data(AIO_FEED_IDS[0])]
+        response_data["temp"] = [v['temp'] for v in value]
+        response_data["humid"] = [v['humid'] for v in value]
+        response_data["light"] = [v['light'] for v in value]
+
+        # Reverse list from furthest to nearest
+        response_data["time"].reverse()
+        response_data["temp"].reverse()
+        response_data["humid"].reverse()
+        response_data["light"].reverse()
+    elif feed_key == AIO_FEED_IDS[1]:
+        response_data["time"] = [d.created_at for d in aio.data(AIO_FEED_IDS[1])]
+        response_data["value"] = [d.value for d in aio.data(AIO_FEED_IDS[1])]
+
+        # Reverse list from furthest to nearest
+        response_data["time"].reverse()
+        response_data["value"].reverse()
+    return jsonify(response_data)
 
 
 # Get a number of rows data on feed (use to load graph when in sensor page)
 @app.route('/history/<string:feed_key>/<int:num_rows>')
 def get_history_data_with_num_rows(feed_key, num_rows):
-    if feed_key == "bbc-test-json":
-        time = [d.created_at for d in aio.data("bbc-test-json")]
-        response_data = [json.loads(d.value) for d in aio.data("bbc-test-json")]
-        for i in range(len(response_data)):
-            response_data[i]["time"] = time[i]
-    elif feed_key == "bbc-led":
-        time = [d.created_at for d in aio.data("bbc-led")]
-        response_data = [{"value": d.value} for d in aio.data("bbc-led")]
-        for i in range(len(response_data)):
-            response_data[i]["time"] = time[i]
-    return jsonify(response_data[:num_rows])
+    response_data = {}
+    if feed_key == AIO_FEED_IDS[0]:
+        response_data["time"] = [d.created_at for d in aio.data(AIO_FEED_IDS[0])][:num_rows]
+        value = [json.loads(d.value) for d in aio.data(AIO_FEED_IDS[0])]
+        value_slice = value[:num_rows]
+        response_data["temp"] = [v['temp'] for v in value_slice]
+        response_data["humid"] = [v['humid'] for v in value_slice]
+        response_data["light"] = [v['light'] for v in value_slice]
+
+        # Reverse list from furthest to nearest
+        response_data["time"].reverse()
+        response_data["temp"].reverse()
+        response_data["humid"].reverse()
+        response_data["light"].reverse()
+    elif feed_key == AIO_FEED_IDS[1]:
+        response_data["time"] = [d.created_at for d in aio.data(AIO_FEED_IDS[1])][:num_rows]
+        response_data["value"] = [d.value for d in aio.data(AIO_FEED_IDS[1])][:num_rows]
+
+        # Reverse list from furthest to nearest
+        response_data["time"].reverse()
+        response_data["value"].reverse()
+    return jsonify(response_data)
 
 
 # Get the latest value of all sensor
 @app.route('/current')
 def get_current_sensor_data():
-    response_data = json.loads(aio.data("bbc-test-json")[0].value)
-    response_data["time"] = aio.data("bbc-test-json")[0].created_at
+    response_data = json.loads(aio.data(AIO_FEED_IDS[0])[0].value)
+    response_data["time"] = datetime.strptime(aio.data(AIO_FEED_IDS[0])[0].created_at, '%Y-%m-%dT%H:%M:%SZ').astimezone(timezone("UTC"))
     return jsonify(response_data)
 
 

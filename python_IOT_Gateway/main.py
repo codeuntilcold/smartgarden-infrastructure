@@ -29,10 +29,11 @@ def  message(client , feed_id , payload):
     print("Nhan du lieu: " + payload)
     # print(type(payload), len(payload))
     if isMicrobitConnected:
-        print("Sending " + payload)
         if feed_id == "bbc-led":
+            print("Sending " + payload)
             ser.write(("LIGHT" + str(payload) + "#").encode())
         elif feed_id == "bbc-pump":
+            print("Sending " + payload)
             ser.write(("PUMP" + str(payload) + "#").encode())
 
 client = MQTTClient(AIO_USERNAME , AIO_KEY)

@@ -74,7 +74,7 @@ def test():
 
     temp = [float(json.loads(d.value)['temp']) for d in data['test']]
     humid = [float(json.loads(d.value)['humid']) for d in data['test']]
-    light = [float(json.loads(d.value)['light']) for d in data['test']]
+    # light = [float(json.loads(d.value)['light']) for d in data['test']]
 
     return render_template('dashboard.html', **locals())
 

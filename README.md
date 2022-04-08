@@ -6,7 +6,7 @@ We run a Flask backend to manage users, pulling and pushing data from and to Ada
 
 To run Flask backend:
 ```bash
-~$ python run.py
+$ python run.py
 ```
 
 ## IOT Gateway

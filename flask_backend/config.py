@@ -35,5 +35,5 @@ class ConfigClass(object):
     # USER_RESEND_EMAIL_CONFIRMATION_URL = '/user/resend-email-confirmation'
     # USER_RESET_PASSWORD_URL = '/user/reset-password/<token>'
 
-    # USER_LOGIN_TEMPLATE = 'flask_user/login.html'
-    # USER_REGISTER_TEMPLATE = 'flask_user/register.html'
+    USER_LOGIN_TEMPLATE = 'flask_user/login.html'
+    USER_REGISTER_TEMPLATE = 'flask_user/register.html'

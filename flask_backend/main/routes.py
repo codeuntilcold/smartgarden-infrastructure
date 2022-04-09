@@ -8,13 +8,10 @@ from flask_backend.main import *
 main = Blueprint('main', __name__)
 
 # # Route to demo realtime connection
-# @main.route('/')
-# def index():
-#     # Depend on client info, we give them the feed_id
-#     return render_template('index.html',
-#                            hostname='localhost',
-#                            port='5000',
-#                            sub_to_feed_id=ConfigClass.AIO_FEED_IDS[0])
+@main.route('/realtime')
+def index():
+    # Depend on client info, we give them the feed_id
+    return render_template('index.html', sub_to_feed_id=ConfigClass.AIO_FEED_IDS[0])
 
 
 # Get full data on the feed

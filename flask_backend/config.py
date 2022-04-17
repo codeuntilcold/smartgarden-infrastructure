@@ -8,7 +8,7 @@ class ConfigClass(object):
     AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 
     # Flask-SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = dotenv_values(".env")["DATABASE_URI"]    # File-based SQL database
+    SQLALCHEMY_DATABASE_URI = dotenv_values(".env")["DATABASE_URL"]    # File-based SQL database
     SQLALCHEMY_TRACK_MODIFICATIONS = False    # Avoids SQLAlchemy warning
 
     # Flask-User settings

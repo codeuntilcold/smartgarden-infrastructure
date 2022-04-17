@@ -6,7 +6,7 @@ class ConfigClass(object):
     AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 
     # Flask-SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///quickstart_app.sqlite'    # File-based SQL database
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:dunix@localhost/garden'    # File-based SQL database
     SQLALCHEMY_TRACK_MODIFICATIONS = False    # Avoids SQLAlchemy warning
 
     # Flask-User settings

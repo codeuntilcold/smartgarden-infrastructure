@@ -4,6 +4,7 @@ from datetime import datetime
 import pytz
 from flask_backend.config import ConfigClass
 from flask_backend.main import *
+from flask_backend.models import *
 
 main = Blueprint('main', __name__)
 
@@ -41,6 +42,13 @@ def get_history_data(feed_key):
         # Reverse list from furthest to nearest
         response_data["time"].reverse()
         response_data["value"].reverse()
+    elif feed_key == ConfigClass.AIO_FEED_IDS[2]:
+        response_data["time"] = [d.created_at for d in aio.data(ConfigClass.AIO_FEED_IDS[2])]
+        response_data["value"] = [d.value for d in aio.data(ConfigClass.AIO_FEED_IDS[2])]
+
+        # Reverse list from furthest to nearest
+        response_data["time"].reverse()
+        response_data["value"].reverse()
     return jsonify(response_data)
 
 
@@ -64,6 +72,13 @@ def get_history_data_with_num_rows(feed_key, num_rows):
     elif feed_key == ConfigClass.AIO_FEED_IDS[1]:
         response_data["time"] = [d.created_at for d in aio.data(ConfigClass.AIO_FEED_IDS[1])][:num_rows]
         response_data["value"] = [d.value for d in aio.data(ConfigClass.AIO_FEED_IDS[1])][:num_rows]
+
+        # Reverse list from furthest to nearest
+        response_data["time"].reverse()
+        response_data["value"].reverse()
+    elif feed_key == ConfigClass.AIO_FEED_IDS[2]:
+        response_data["time"] = [d.created_at for d in aio.data(ConfigClass.AIO_FEED_IDS[2])][:num_rows]
+        response_data["value"] = [d.value for d in aio.data(ConfigClass.AIO_FEED_IDS[2])][:num_rows]
 
         # Reverse list from furthest to nearest
         response_data["time"].reverse()

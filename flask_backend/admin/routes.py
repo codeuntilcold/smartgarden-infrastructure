@@ -71,7 +71,7 @@ def pushDatatoPostgres():
                 db.session.commit()
         elif feed == "bbc-led" or feed == "bbc-pump":
             temp_data = []
-            time = [datetime.strptime(d.created_at, '%Y-%m-%dT%H:%M:%SZ') for d in aio.data(feed)]
+            time = [datetime.datetime.strptime(d.created_at, '%Y-%m-%dT%H:%M:%SZ') for d in aio.data(feed)]
             value = [d.value for d in aio.data(feed)]
 
             # Reverse list from furthest to nearest
@@ -138,7 +138,7 @@ def add_new_user():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify(new_user)
+    return jsonify(user_data)
 
 
 # Delete user

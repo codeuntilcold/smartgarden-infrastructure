@@ -3,7 +3,7 @@ from dotenv import dotenv_values
 class ConfigClass(object):
 
     SECRET_KEY = "a_very_big_secret"
-    AIO_FEED_IDS = ["bbc-test-json", "bbc-led"]
+    AIO_FEED_IDS = ["bbc-test-json", "bbc-led", "bbc-pump"]
     AIO_USERNAME = "toilaaihcmut"
     AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 

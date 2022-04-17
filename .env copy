@@ -1,0 +1,1 @@
+DATABASE_URI="postgresql://postgres:A_PASSWORD@localhost/A_DATABASE"

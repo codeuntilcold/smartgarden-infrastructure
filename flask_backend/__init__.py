@@ -1,6 +1,8 @@
-from flask import Flask
+from flask import Flask, request
 from flask_socketio import SocketIO, send
-from flask_user import UserManager
+from flask_user import UserManager, PasswordManager, roles_required
+from flask_user.db_manager import DBManager
+from flask_login import login_user, logout_user, login_required
 
 from .main.routes import main
 from .admin.routes import admin
@@ -49,3 +51,40 @@ with app.app_context():
         user.roles.append(Role(name='Agent'))
         db.session.add(user)
         db.session.commit()
+
+
+db_manager = DBManager(app, db, User)
+pass_manager = PasswordManager(app)
+
+@app.route("/login", methods=["POST"])
+def user_login():
+    username = request.get_json()['username']
+    password = request.get_json()['password']
+    remember_me = 'remember' in request.form
+    user = db_manager.find_user_by_username(username)
+    if user:
+        if pass_manager.verify_password(password, user.password):
+            login_user(user, remember=remember_me)
+            return { "success": "ok" }
+    return { "success": "false" }
+
+
+@app.route("/logout")
+@login_required
+def user_logout():
+    if logout_user():
+        return { "success": "ok" }
+    return { "success": "false" }
+
+
+@app.route("/signup", methods=["POST"])
+# @roles_required('Admin')
+def user_signup():
+    username = request.get_json()['username']
+    password = request.get_json()['password']
+    if db_manager.username_is_available(username):
+        new_user = User(username=username, email=username, password=user_manager.hash_password(password))
+        db.session.add(new_user)
+        db.session.commit()
+        return { "success": "ok" }
+    return { "success": "false" }

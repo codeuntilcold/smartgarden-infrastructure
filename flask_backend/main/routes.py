@@ -85,21 +85,3 @@ def control_device(feed_key, status):
         return abort(404)
 
 
-from flask_user import login_required
-
-
-# Route to demo user
-@main.route('/')
-def home_page():
-    # String-based templates
-    return render_template('home.html')
-
-
-# Route to demo user
-@main.route('/members')
-@login_required
-def member_page():
-    # String-based templates
-    return render_template('member.html')
-
-

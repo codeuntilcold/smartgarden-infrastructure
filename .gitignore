@@ -1,8 +1,13 @@
+delete_random_data.ipynb
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+.idea/
+*/.idea/
+*/__pycache__/
 # C extensions
 *.so
 
@@ -58,6 +63,7 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+flask_backend/*.sqlite
 db.sqlite3
 db.sqlite3-journal
 
@@ -115,6 +121,8 @@ flask_backend/.idea/
 flask_backend/__pycache__
 python_IOT_Gateway/venv/
 python_IOT_Gateway/.idea/
+flask_backend/delete_random_data.ipynb
+test.http
 
 # Spyder project settings
 .spyderproject

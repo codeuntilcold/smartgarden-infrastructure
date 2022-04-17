@@ -11,7 +11,7 @@
 
 <script>
     $(document).ready(() => {
-        let sock = io.connect('http://{{ hostname }}:{{ port }}');
+        let sock = io.connect(location.host);
 
         sock.on('message', (msg) => {
             $('#info').append('<li>' + msg + '</li>');

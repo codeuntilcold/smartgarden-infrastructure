@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a_secret'
 socketio = SocketIO(app, cors_allowed_origins='*')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:Nhthuong5690@localhost:5432/garden'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres@localhost/garden'
 app.debug = True
 db = SQLAlchemy(app)
 
@@ -313,7 +313,7 @@ class threshold(db.Model):
         self.cooldown = data.get('cooldown')
 
 
-@app.route("/", methods=["GET"])
+@app.route("/admin/all", methods=["GET"])
 def getAdmin():
     all = admin.query.all()
     output = []
@@ -426,23 +426,6 @@ def add_new_garden():
     return jsonify(garden_data)
 
 
-# Load garden information
-@app.route("/user/garden_info/<string:gardenID>")
-def get_garden_info(gardenID):
-    garden_info = garden.query.filter_by(gardenID=gardenID).first()
-    cur_garden = {}
-    cur_garden["gardenID"] = garden_info.gardenID
-    cur_garden["name"] = garden_info.name
-    cur_garden["userID"] = garden_info.userID
-    cur_garden["location"] = garden_info.location
-    cur_garden["starttime"] = garden_info.starttime
-    cur_garden["description"] = garden_info.description
-    cur_garden["area"] = garden_info.area
-    cur_garden["image"] = garden_info.image
-
-    return jsonify(cur_garden)
-
-
 # Add user
 @app.route("/admin/add_user", methods=["POST"])
 def add_new_user():
@@ -462,6 +445,23 @@ def delete_user(ID):
     db.session.commit()
 
     return "Delete success"
+
+
+# Load garden information
+@app.route("/user/garden_info/<string:gardenID>")
+def get_garden_info(gardenID):
+    garden_info = garden.query.filter_by(gardenID=gardenID).first()
+    cur_garden = {}
+    cur_garden["gardenID"] = garden_info.gardenID
+    cur_garden["name"] = garden_info.name
+    cur_garden["userID"] = garden_info.userID
+    cur_garden["location"] = garden_info.location
+    cur_garden["starttime"] = garden_info.starttime
+    cur_garden["description"] = garden_info.description
+    cur_garden["area"] = garden_info.area
+    cur_garden["image"] = garden_info.image
+
+    return jsonify(cur_garden)
 
 
 # Load sensor history information

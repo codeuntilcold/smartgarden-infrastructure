@@ -114,21 +114,36 @@ def control_device(feed_key, status):
         return abort(404)
 
 
-# Load garden information
-@main.route("/user/garden_info/<string:gardenID>")
+# Load, change garden information
+@main.route("/user/garden_info/<string:gardenID>", methods=["GET", "POST"])
 def get_garden_info(gardenID):
     garden_info = garden.query.filter_by(gardenID=gardenID).first()
-    cur_garden = {}
-    cur_garden["gardenID"] = garden_info.gardenID
-    cur_garden["name"] = garden_info.name
-    cur_garden["userID"] = garden_info.userID
-    cur_garden["location"] = garden_info.location
-    cur_garden["starttime"] = garden_info.starttime
-    cur_garden["description"] = garden_info.description
-    cur_garden["area"] = garden_info.area
-    cur_garden["image"] = garden_info.image
+    if request.method == "GET":
+        cur_garden = {}
+        cur_garden["gardenID"] = garden_info.gardenID
+        cur_garden["name"] = garden_info.name
+        cur_garden["userID"] = garden_info.userID
+        cur_garden["location"] = garden_info.location
+        cur_garden["starttime"] = garden_info.starttime
+        cur_garden["description"] = garden_info.description
+        cur_garden["area"] = garden_info.area
+        cur_garden["image"] = garden_info.image
 
-    return jsonify(cur_garden)
+        return jsonify(cur_garden)
+    elif request.method == "POST":
+        change_data = request.get_json()
+        garden_info.gardenID = change_data["gardenID"]
+        garden_info.name = change_data["name"]
+        garden_info.userID = change_data["userID"]
+        garden_info.location = change_data["location"]
+        garden_info.starttime = change_data["starttime"]
+        garden_info.description = change_data["description"]
+        garden_info.area = change_data["area"]
+        garden_info.image = change_data["image"]
+
+        db.session.add(garden_info)
+        db.session.commit()
+        return { "success": "ok" }
 
 
 # Load sensor history information
@@ -172,3 +187,32 @@ def get_device_history(gardenID, name):
             response.append(cur_data)
 
     return jsonify(response)
+
+
+# View or Change information of user
+@main.route("/user/account_information/<string:ID>", methods=["GET", "POST"])
+def get_account_information(ID):
+    user_account = user.query.filter_by(ID=ID).first()
+    if request.method == "GET":
+        cur_user = {}
+        cur_user["ID"] = user_account.ID
+        cur_user["name"] = user_account.name
+        cur_user["username"] = user_account.username
+        cur_user["password"] = user_account.password
+        cur_user["email"] = user_account.email
+        cur_user["phone"] = user_account.phone
+        cur_user["image"] = user_account.image
+        return jsonify(cur_user)
+    elif request.method == "POST":
+        change_data = request.get_json()
+        user_account.ID = change_data["ID"]
+        user_account.name = change_data["name"]
+        user_account.username = change_data["username"]
+        user_account.password = change_data["password"]
+        user_account.email = change_data["email"]
+        user_account.phone = change_data["phone"]
+        user_account.image = change_data["image"]
+        db.session.add(user_account)
+        db.session.commit()
+        return { "success": "ok" }
+

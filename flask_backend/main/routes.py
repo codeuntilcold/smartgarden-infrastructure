@@ -114,6 +114,25 @@ def control_device(feed_key, status):
         return abort(404)
 
 
+# Load all garden
+@main.route("/user/all_garden/<string:userID>")
+def get_all_garden(userID):
+    all_garden = garden.query.filter_by(userID=userID).all()
+    response = []
+    for gd in all_garden:
+        cur_garden = {}
+        cur_garden["gardenID"] = gd.gardenID
+        cur_garden["name"] = gd.name
+        cur_garden["userID"] = gd.userID
+        cur_garden["location"] = gd.location
+        cur_garden["starttime"] = gd.starttime
+        cur_garden["description"] = gd.description
+        cur_garden["area"] = gd.area
+        cur_garden["image"] = gd.image
+        response.append(cur_garden)
+    return jsonify(response)
+
+
 # Load, change garden information
 @main.route("/user/garden_info/<string:gardenID>", methods=["GET", "POST"])
 def get_garden_info(gardenID):

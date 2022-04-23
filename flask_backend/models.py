@@ -4,42 +4,13 @@ from flask_user import UserMixin
 # Initialize Flask-SQLAlchemy
 db = SQLAlchemy()
 
-# class User(db.Model, UserMixin):
-#     __tablename__ = 'users'
-#     id = db.Column(db.Integer, primary_key=True)
-#     active = db.Column('is_active', db.Boolean(), nullable=False, server_default='1')
-
-#     # User authentication information. The collation='NOCASE' is required
-#     # to search case insensitively when USER_IFIND_MODE is 'nocase_collation'.
-#     email = db.Column(db.String(255), nullable=False, unique=True)
-#     username = db.Column(db.String(50), nullable=False, unique=True)
-#     password = db.Column(db.String(255), nullable=False)
-
-#     # User information
-#     first_name = db.Column(db.String(100, collation='NOCASE'), nullable=False, server_default='')
-#     last_name = db.Column(db.String(100, collation='NOCASE'), nullable=False, server_default='')
-
-
-# ADMIN
-# class admin(db.Model):
-#     __tablename__ = 'admin'
-
-#     ID = db.Column(db.Integer, primary_key=True)
-#     name = db.Column(db.String(128), nullable=False)
-#     username = db.Column(db.String(128), unique=True, nullable=False)
-#     password = db.Column(db.String(128), nullable=False)
-#     email = db.Column(db.String(128), unique=True, nullable=False)
-
-#     def __init__(self, data):
-#         self.ID = data.get('ID')
-#         self.name = data.get('name')
-#         self.username = data.get('username')
-#         self.password = data.get('password')
-#         self.email = data.get('email')
+class Deserialize:
+    def as_dict(self):
+       return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 # USER
-class user(db.Model, UserMixin):
+class user(db.Model, UserMixin, Deserialize):
     __tablename__ = 'user'
 
     ID = db.Column(db.Integer, primary_key=True)
@@ -49,6 +20,7 @@ class user(db.Model, UserMixin):
     email = db.Column(db.String(128), unique=True, nullable=False)
     phone = db.Column(db.String(10), unique=True, nullable=False)
     image = db.Column(db.String(128))
+    role = db.relationship('Role', secondary='user_role')
 
     def __init__(self, data):
         self.ID = data.get('ID')
@@ -59,9 +31,25 @@ class user(db.Model, UserMixin):
         self.phone = data.get('phone')
         self.image = data.get('image')
 
+    def get_id(self):
+        return self.ID
+
+
+# Define the Role data-model
+class Role(db.Model, Deserialize):
+    __tablename__ = 'role'
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(50), unique=True)
+
+# Define the UserRoles association table
+class UserRoles(db.Model, Deserialize):
+    __tablename__ = 'user_role'
+    id = db.Column(db.Integer(), primary_key=True)
+    user_id = db.Column(db.Integer(), db.ForeignKey('user.ID', ondelete='CASCADE'))
+    role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
 
 # GARDEN
-class garden(db.Model):
+class garden(db.Model, Deserialize):
     __tablename__ = 'garden'
 
     gardenID = db.Column(db.Integer, primary_key=True)
@@ -85,7 +73,7 @@ class garden(db.Model):
 
 
 # MEASURE
-class measure(db.Model):
+class measure(db.Model, Deserialize):
     __tablename__ = 'measure'
 
     ID = db.Column(db.Integer, primary_key=True)
@@ -103,7 +91,7 @@ class measure(db.Model):
 
 
 # PUMP
-class pump(db.Model):
+class pump(db.Model, Deserialize):
     __tablename__ = 'pump'
 
     ID = db.Column(db.Integer, primary_key=True)
@@ -119,7 +107,7 @@ class pump(db.Model):
 
 
 # LIGHT
-class light(db.Model):
+class light(db.Model, Deserialize):
     __tablename__ = 'light'
 
     ID = db.Column(db.Integer, primary_key=True)
@@ -135,7 +123,7 @@ class light(db.Model):
 
 
 # THRESHOLD
-class threshold(db.Model):
+class threshold(db.Model, Deserialize):
     __tablename__ = 'threshold'
     __table_args__ = (
         db.UniqueConstraint('TOE', 'TOM', 'gardenID', 'upper', 'lower'),

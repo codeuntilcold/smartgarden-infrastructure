@@ -30,10 +30,9 @@ with app.app_context():
     # Setup Flask-user and specify the user data-model
     user_manager = UserManager(app, db, user)
 
-    # Create 'member@example.com' user with no roles
     if not user.query.filter(user.email == 'member@example.com').first():
         data = {
-            "ID": "1",
+            # "ID": "1",
             "name": "Nam",
             "username": 'user1',
             "email": 'member@example.com',
@@ -45,10 +44,9 @@ with app.app_context():
         db.session.add(new_user)
         db.session.commit()
 
-    # Create 'admin@example.com' user with 'Admin' and 'Agent' roles
     if not user.query.filter(user.email == 'admin@example.com').first():
         data = {
-            "ID": "2",
+            # "ID": "2",
             "name": "Nam",
             "username": 'admin1',
             "email": 'admin@example.com',
@@ -57,8 +55,7 @@ with app.app_context():
             "image":""
         }
         new_user = user(data)
-        # user.roles.append(Role(name='Admin'))
-        # user.roles.append(Role(name='Agent'))
+        user.roles.append(Role(name='Admin'))
         db.session.add(new_user)
         db.session.commit()
 
@@ -75,26 +72,13 @@ def user_login():
     if user:
         if pass_manager.verify_password(password, user.password):
             login_user(user, remember=remember_me)
-            return { "success": "ok" }
+            return { "success": "true" }
     return { "success": "false" }
 
 
 @app.route("/logout")
-@login_required
+# @login_required
 def user_logout():
     if logout_user():
-        return { "success": "ok" }
-    return { "success": "false" }
-
-
-@app.route("/signup", methods=["POST"])
-# @roles_required('Admin')
-def user_signup():
-    username = request.get_json()['username']
-    password = request.get_json()['password']
-    if db_manager.username_is_available(username):
-        new_user = user(username=username, email=username, password=user_manager.hash_password(password))
-        db.session.add(new_user)
-        db.session.commit()
-        return { "success": "ok" }
+        return { "success": "true" }
     return { "success": "false" }

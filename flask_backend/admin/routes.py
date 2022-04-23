@@ -107,14 +107,14 @@ def get_all_users():
     all_users = user.query.all()
     response = []
     for u in all_users:
-        cur_user = {}
-        cur_user["ID"] = u.ID
-        cur_user["name"] = u.name
-        cur_user["username"] = u.username
-        cur_user["password"] = u.password
-        cur_user["email"] = u.email
-        cur_user["phone"] = u.phone
-        cur_user["image"] = u.image
+        cur_user = u.as_dict()
+        # cur_user["ID"] = u.ID
+        # cur_user["name"] = u.name
+        # cur_user["username"] = u.username
+        # cur_user["password"] = u.password
+        # cur_user["email"] = u.email
+        # cur_user["phone"] = u.phone
+        # cur_user["image"] = u.image
         response.append(cur_user)
     return jsonify(response)
 
@@ -132,13 +132,18 @@ def add_new_garden():
 
 # Add user
 @admin.route("/add_user", methods=["POST"])
+# @roles_required('Admin')
 def add_new_user():
-    user_data = request.get_json()
-    new_user = user(user_data)
+    username = request.get_json()['username']
+    password = request.get_json()['password']
+
+    from flask_backend import db_manager, user_manager
+    if db_manager.find_user_by_username(username):
+        return { "success": "false" }
+    new_user = user({**request.get_json(), "password": user_manager.hash_password(password)})
     db.session.add(new_user)
     db.session.commit()
-
-    return jsonify(user_data)
+    return jsonify(new_user.as_dict())
 
 
 # Delete user
@@ -148,4 +153,4 @@ def delete_user(ID):
     db.session.delete(cur_user)
     db.session.commit()
 
-    return { "success": "ok" }
+    return { "success": "true" }

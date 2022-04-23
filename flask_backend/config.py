@@ -1,4 +1,5 @@
 from dotenv import dotenv_values
+import os
 
 class ConfigClass(object):
 
@@ -8,7 +9,9 @@ class ConfigClass(object):
     AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"
 
     # Flask-SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = dotenv_values(".env")["DATABASE_URL"]    # File-based SQL database
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL").replace("postgres://", "postgresql://", 1) \
+        if os.environ.get("DATABASE_URL") and os.environ.get("DATABASE_URL").startswith("postgres://") \
+        else dotenv_values(".env")["DATABASE_URL"]    # File-based SQL database
     SQLALCHEMY_TRACK_MODIFICATIONS = False    # Avoids SQLAlchemy warning
 
     # Flask-User settings

@@ -1,8 +1,12 @@
-from flask import Flask, request
+import datetime
+from flask import Flask, jsonify, request
 from flask_socketio import SocketIO, send
-from flask_user import UserManager, PasswordManager, roles_required
+from flask_user import UserManager, PasswordManager
 from flask_user.db_manager import DBManager
-from flask_login import login_user, logout_user, login_required
+from flask_jwt_extended import (
+    create_access_token,
+    JWTManager
+)
 
 from .main.routes import main
 from .admin.routes import admin
@@ -17,7 +21,7 @@ app.register_blueprint(admin, url_prefix='/admin')
 
 # SOCKET INIT
 socketio = SocketIO(app, cors_allowed_origins='*')
-
+jwt = JWTManager(app)
 
 @socketio.on('connect')
 def initialize_socket():
@@ -30,9 +34,9 @@ with app.app_context():
     # Setup Flask-user and specify the user data-model
     user_manager = UserManager(app, db, user)
 
-    if not user.query.filter(user.email == 'member@example.com').first():
+    default_user = user.query.filter(user.email == 'member@example.com').first()
+    if not default_user:
         data = {
-            # "ID": "1",
             "name": "Nam",
             "username": 'user1',
             "email": 'member@example.com',
@@ -44,9 +48,9 @@ with app.app_context():
         db.session.add(new_user)
         db.session.commit()
 
-    if not user.query.filter(user.email == 'admin@example.com').first():
+    default_admin = user.query.filter(user.email == 'admin@example.com').first()
+    if not default_admin:
         data = {
-            # "ID": "2",
             "name": "Nam",
             "username": 'admin1',
             "email": 'admin@example.com',
@@ -55,7 +59,7 @@ with app.app_context():
             "image":""
         }
         new_user = user(data)
-        user.roles.append(Role(name='Admin'))
+        new_user.is_admin = True
         db.session.add(new_user)
         db.session.commit()
 
@@ -67,18 +71,15 @@ pass_manager = PasswordManager(app)
 def user_login():
     username = request.get_json()['username']
     password = request.get_json()['password']
-    remember_me = 'remember' in request.form
+    expire = datetime.timedelta(days=30) if 'remember' in request.form else None
     user = db_manager.find_user_by_username(username)
     if user:
         if pass_manager.verify_password(password, user.password):
-            login_user(user, remember=remember_me)
-            return { "success": "true" }
-    return { "success": "false" }
-
-
-@app.route("/logout")
-# @login_required
-def user_logout():
-    if logout_user():
-        return { "success": "true" }
-    return { "success": "false" }
+            access_token = create_access_token(
+                identity={ 
+                    "username": user.username,
+                    "is_admin": user.is_admin
+                }, 
+                expires_delta=expire)
+            return jsonify(success=True, access_token=access_token)
+    return jsonify(access_token=None, success=False)

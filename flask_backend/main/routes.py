@@ -118,18 +118,7 @@ def control_device(feed_key, status):
 @main.route("/user/all_garden/<string:userID>")
 def get_all_garden(userID):
     all_garden = garden.query.filter_by(userID=userID).all()
-    response = []
-    for gd in all_garden:
-        cur_garden = {}
-        cur_garden["gardenID"] = gd.gardenID
-        cur_garden["name"] = gd.name
-        cur_garden["userID"] = gd.userID
-        cur_garden["location"] = gd.location
-        cur_garden["starttime"] = gd.starttime
-        cur_garden["description"] = gd.description
-        cur_garden["area"] = gd.area
-        cur_garden["image"] = gd.image
-        response.append(cur_garden)
+    response = [gd.as_dict() for gd in all_garden]
     return jsonify(response)
 
 
@@ -138,17 +127,7 @@ def get_all_garden(userID):
 def get_garden_info(gardenID):
     garden_info = garden.query.filter_by(gardenID=gardenID).first()
     if request.method == "GET":
-        cur_garden = {}
-        cur_garden["gardenID"] = garden_info.gardenID
-        cur_garden["name"] = garden_info.name
-        cur_garden["userID"] = garden_info.userID
-        cur_garden["location"] = garden_info.location
-        cur_garden["starttime"] = garden_info.starttime
-        cur_garden["description"] = garden_info.description
-        cur_garden["area"] = garden_info.area
-        cur_garden["image"] = garden_info.image
-
-        return jsonify(cur_garden)
+        return jsonify(garden_info.as_dict())
     elif request.method == "POST":
         change_data = request.get_json()
         garden_info.gardenID = change_data["gardenID"]
@@ -169,16 +148,7 @@ def get_garden_info(gardenID):
 @main.route("/user/sensor_history/<string:gardenID>")
 def get_sensor_history(gardenID):
     sensor_info = measure.query.filter_by(gardenID=gardenID).all()
-    response = []
-    for data in sensor_info:
-        cur_data = {}
-        cur_data["ID"] = data.ID
-        cur_data["gardenID"] = data.gardenID
-        cur_data["type"] = data.type
-        cur_data["value"] = data.value
-        cur_data["time"] = data.time
-        response.append(cur_data)
-
+    response = [data.as_dict() for data in sensor_info]
     return jsonify(response)
 
 
@@ -189,20 +159,12 @@ def get_device_history(gardenID, name):
     if name == "pump":
         pump_info = pump.query.filter_by(gardenID=gardenID).all()
         for data in pump_info:
-            cur_data = {}
-            cur_data["ID"] = data.ID
-            cur_data["gardenID"] = data.gardenID
-            cur_data["time"] = data.time
-            cur_data["status"] = data.status
+            cur_data = data.as_dict()
             response.append(cur_data)
     else:
         light_info = light.query.filter_by(gardenID=gardenID).all()
         for data in light_info:
-            cur_data = {}
-            cur_data["ID"] = data.ID
-            cur_data["gardenID"] = data.gardenID
-            cur_data["time"] = data.time
-            cur_data["status"] = data.status
+            cur_data = data.as_dict()
             response.append(cur_data)
 
     return jsonify(response)
@@ -213,15 +175,7 @@ def get_device_history(gardenID, name):
 def get_account_information(ID):
     user_account = user.query.filter_by(ID=ID).first()
     if request.method == "GET":
-        cur_user = {}
-        cur_user["ID"] = user_account.ID
-        cur_user["name"] = user_account.name
-        cur_user["username"] = user_account.username
-        cur_user["password"] = user_account.password
-        cur_user["email"] = user_account.email
-        cur_user["phone"] = user_account.phone
-        cur_user["image"] = user_account.image
-        return jsonify(cur_user)
+        return jsonify(user_account.as_dict())
     elif request.method == "POST":
         change_data = request.get_json()
         user_account.ID = change_data["ID"]

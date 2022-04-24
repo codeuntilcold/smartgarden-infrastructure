@@ -20,7 +20,7 @@ class user(db.Model, UserMixin, Deserialize):
     email = db.Column(db.String(128), unique=True, nullable=False)
     phone = db.Column(db.String(10), unique=True, nullable=False)
     image = db.Column(db.String(128))
-    role = db.relationship('Role', secondary='user_role')
+    is_admin = db.Column(db.Boolean, default=False)
 
     def __init__(self, data):
         self.ID = data.get('ID')
@@ -34,19 +34,6 @@ class user(db.Model, UserMixin, Deserialize):
     def get_id(self):
         return self.ID
 
-
-# Define the Role data-model
-class Role(db.Model, Deserialize):
-    __tablename__ = 'role'
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), unique=True)
-
-# Define the UserRoles association table
-class UserRoles(db.Model, Deserialize):
-    __tablename__ = 'user_role'
-    id = db.Column(db.Integer(), primary_key=True)
-    user_id = db.Column(db.Integer(), db.ForeignKey('user.ID', ondelete='CASCADE'))
-    role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
 
 # GARDEN
 class garden(db.Model, Deserialize):

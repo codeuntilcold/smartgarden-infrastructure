@@ -3,7 +3,9 @@ import os
 
 class ConfigClass(object):
 
-    SECRET_KEY = "a_very_big_secret"
+    SECRET_KEY = "a_very_big_secret_that_must_be_longer_to_prevent_someone_from_warning"
+    JWT_SECRET_KEY = SECRET_KEY
+    
     AIO_FEED_IDS = ["bbc-test-json", "bbc-led", "bbc-pump"]
     AIO_USERNAME = "toilaaihcmut"
     AIO_KEY = "aio_eVKn92mKQRDZCyoUDXowg5meHC4n"

@@ -5,6 +5,7 @@ import pytz
 from flask_backend.config import ConfigClass
 from flask_backend.main import *
 from flask_backend.models import *
+import numpy as np
 
 main = Blueprint('main', __name__)
 
@@ -89,29 +90,49 @@ def get_history_data_with_num_rows(feed_key, num_rows):
 # Get the latest value of all sensor
 @main.route('/sensor/current')
 def get_current_sensor_data():
-    response_data = json.loads(aio.data(ConfigClass.AIO_FEED_IDS[0])[0].value)
-    response_data["time"] = datetime.strptime(aio.data(ConfigClass.AIO_FEED_IDS[0])[0].created_at, '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone("UTC"))
+    # from datetime import datetime
+    # response_data = json.loads(aio.data(ConfigClass.AIO_FEED_IDS[0])[0].value)
+    # response_data["time"] = datetime.strptime(aio.data(ConfigClass.AIO_FEED_IDS[0])[0].created_at, '%Y-%m-%dT%H:%M:%SZ').astimezone(pytz.timezone("UTC"))
+    temp = measure.query.order_by(measure.ID.desc()).filter_by(type=1).first()
+    humid = measure.query.order_by(measure.ID.desc()).filter_by(type=2).first()
+    light = measure.query.order_by(measure.ID.desc()).filter_by(type=3).first()
+    response_data = [temp.as_dict(), humid.as_dict(), light.as_dict()]
     return jsonify(response_data)
 
 
 # Get the current state of device
 @main.route('/<string:feed_key>/current')
 def get_current_device_data(feed_key):
-    response_data = {}
+    # from datetime import datetime
+    # response_data = {}
 
-    response_data["value"] = aio.data(feed_key)[0].value
-    response_data["time"] = datetime.strptime(aio.data(feed_key)[0].created_at, '%Y-%m-%dT%H:%M:%SZ')
-    return jsonify(response_data)
+    # response_data["value"] = aio.data(feed_key)[0].value
+    # response_data["time"] = datetime.strptime(aio.data(feed_key)[0].created_at, '%Y-%m-%dT%H:%M:%SZ')
+    if feed_key == ConfigClass.AIO_FEED_IDS[1]:
+        data = light.query.order_by(light.ID.desc()).first()
+    else:
+        data = pump.query.order_by(pump.ID.desc()).first()
+    return jsonify(data.as_dict())
 
 
 # Control device <bbc-led: control light; bbc-pump: control pump> (status: 0 - OFF, 1 - ON)
-@main.route('/control/<string:feed_key>/<int:status>', methods=["POST"])
-def control_device(feed_key, status):
+@main.route('/control/<string:gardenID>/<string:feed_key>/<int:status>', methods=["POST"])
+def control_device(gardenID, feed_key, status):
     try:
         client.publish(feed_key, status)
-        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
-    finally:
-        return abort(404)
+        if feed_key == ConfigClass.AIO_FEED_IDS[1]:
+            cur_id = light.query.order_by(light.ID.desc()).first().as_dict()["ID"]
+            data = {"ID": cur_id + 1, "gardenID": gardenID, "time": datetime.now(), "status": status}
+            new_line = light(data)
+        else:
+            cur_id = pump.query.order_by(pump.ID.desc()).first().as_dict()["ID"]
+            data = {"ID": cur_id + 1, "gardenID": gardenID, "time": datetime.now(), "status": status}
+            new_line = pump(data)
+        db.session.add(new_line)
+        db.session.commit()
+        return json.dumps({ 'success': True }), 200
+    except:
+        return json.dumps({ 'success': False }), 404
 
 
 # Load all garden
@@ -189,3 +210,8 @@ def get_account_information(ID):
         db.session.commit()
         return { "success": "ok" }
 
+
+@main.route("/something")
+def get_fifty_data():
+    client.publish("bbc-test-json", "{\"temp\": 25, \"humid\": 55, \"light\": 220}")
+    return {"success": "ok"}

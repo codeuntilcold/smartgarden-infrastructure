@@ -213,5 +213,5 @@ def get_account_information(ID):
 
 @main.route("/something")
 def get_fifty_data():
-    client.publish("bbc-test-json", "{\"temp\": 25, \"humid\": 55, \"light\": 220}")
+    client.publish("bbc-test-json", "{\"temp\": 1, \"humid\": 55, \"light\": 220}")
     return {"success": "ok"}

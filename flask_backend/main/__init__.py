@@ -71,6 +71,7 @@ def message(_client, feed_id, payload):
                 db.session.add(new_line)
                 db.session.commit()
     else:
+        print("out")
         flask_backend.socketio.emit(feed_id, "There is a problem with the data")
 
 # MQTT CLIENT INIT

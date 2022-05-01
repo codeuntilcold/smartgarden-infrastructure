@@ -198,11 +198,12 @@ def get_account_information(ID):
     if request.method == "GET":
         return jsonify(user_account.as_dict())
     elif request.method == "POST":
+        from flask_backend import user_manager
         change_data = request.get_json()
         user_account.ID = change_data["ID"]
         user_account.name = change_data["name"]
         user_account.username = change_data["username"]
-        user_account.password = change_data["password"]
+        user_account.password = user_manager.hash_password(change_data["password"])
         user_account.email = change_data["email"]
         user_account.phone = change_data["phone"]
         user_account.image = change_data["image"]

@@ -6,8 +6,16 @@ from flask_backend.config import ConfigClass
 from flask_backend.main import *
 from flask_backend.models import *
 import numpy as np
+import pandas as pd
+from joblib import load
+
+
+PATH = os.path.join(os.getcwd(), 'flask_backend', 'data')
+MODEL_TEMP = load(os.path.join(PATH, 'model_temp.joblib'))
+MODEL_HUMID = load(os.path.join(PATH, 'model_humid.joblib'))
 
 main = Blueprint('main', __name__)
+
 
 @main.route('/')
 def main_page():
@@ -216,3 +224,60 @@ def get_account_information(ID):
 def get_fifty_data():
     client.publish("bbc-test-json", "{\"temp\": 1, \"humid\": 55, \"light\": 220}")
     return {"success": "ok"}
+
+
+"""
+    Return the current temperature and the next predicted temperature
+"""
+@main.route("/predict", methods=["POST"])
+def run_input_on_model():
+    input = pd.DataFrame(request.get_json(), index=[0])
+    hour = int(request.get_json()['hour'])
+    hours = pd.DataFrame(
+        data=np.array([1 if i == hour else 0 for i in range(24)]).reshape(1, -1),
+        columns=['hour_{}'.format(i) for i in range(24)]
+    )
+    input = input.join(hours)
+    input = input.drop(columns=['hour'])
+    try:
+        result_temp = MODEL_TEMP.predict(input)
+        result_humid = MODEL_HUMID.predict(input)
+        return jsonify(
+            hour=hour + 1,
+            pred_temp=result_temp.tolist()[0],
+            pred_humid=result_humid.tolist()[0]
+        ), 200
+    except BaseException as err:
+        return jsonify(err=str(err)), 500
+
+
+@main.route("/predict-rest", methods=["POST"])
+def get_predicted_data_for_rest_of_day():
+    base_input = pd.DataFrame(request.get_json(), index=[0])
+    base_hour = int(request.get_json()['hour'])
+    res = [{ 
+        "hour": request.get_json()["hour"],
+        "pred_humid": request.get_json()["humidity"],
+        "pred_temp": request.get_json()["temp"]
+    }]
+    try:
+        for hour in range(base_hour, 24):
+            hours = pd.DataFrame(
+                data=np.array([1 if i == hour else 0 for i in range(24)]).reshape(1, -1),
+                columns=['hour_{}'.format(i) for i in range(24)]
+            )
+            input = base_input.join(hours)
+            input = input.drop(columns=['hour'])
+            input['temp'] = res[-1]["pred_temp"]
+            input['humidity'] = res[-1]["pred_humid"]
+
+            result_temp = MODEL_TEMP.predict(input)
+            result_humid = MODEL_HUMID.predict(input)
+            res.append({
+                "hour":hour + 1,
+                "pred_temp":result_temp.tolist()[0],
+                "pred_humid":result_humid.tolist()[0]
+            })
+        return jsonify(res)
+    except BaseException as err:
+        return jsonify(err=str(err)), 500

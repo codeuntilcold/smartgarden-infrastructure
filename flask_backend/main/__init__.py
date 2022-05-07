@@ -1,5 +1,4 @@
 import json
-from flask import jsonify
 from flask_backend.config import *
 from Adafruit_IO import MQTTClient, Client
 import sys
@@ -54,10 +53,9 @@ def message(_client, feed_id, payload):
 
     gardenID = 1 # the first garden
     payload = json.loads(payload)
-    if payload["temp"] >= lower_iqr_t and payload["temp"] <= upper_iqr_t and payload["humid"] >= lower_iqr_h and payload["humid"] <= upper_iqr_h and payload["light"] >= lower_iqr_l and payload["light"] <= upper_iqr_l:
-
-        # "Broadcast" payload from feed_id to feed_id listeners
-        flask_backend.socketio.emit(feed_id, payload)
+    if payload["temp"] >= lower_iqr_t and payload["temp"] <= upper_iqr_t \
+        and payload["humid"] >= lower_iqr_h and payload["humid"] <= upper_iqr_h \
+        and payload["light"] >= lower_iqr_l and payload["light"] <= upper_iqr_l:
 
         # add data to database
         with flask_backend.app.app_context():
@@ -70,6 +68,8 @@ def message(_client, feed_id, payload):
                 new_line = measure(ele)
                 db.session.add(new_line)
                 db.session.commit()
+            # "Broadcast" payload from feed_id to feed_id listeners
+            flask_backend.socketio.emit(feed_id, payload)
     else:
         print("out")
         flask_backend.socketio.emit(feed_id, "There is a problem with the data")

@@ -44,7 +44,7 @@ def pushDatatoPostgres():
     arr_data = {}
     for feed in ConfigClass.AIO_FEED_IDS:
         if feed == "bbc-test-json":
-            df = pd.read_csv('flask_backend\data\data_clean.csv')
+            df = pd.read_csv(os.path.join(os.getcwd(), 'flask_backend', 'data', 'data_clean.csv'))
             df = df[::-1]
             data = []
             for i in range(len(df)):

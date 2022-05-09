@@ -182,19 +182,19 @@ def get_sensor_history(gardenID):
 
 
 # Load device history information
-@main.route("/user/device_history/<string:gardenID>/<string:name>")
-def get_device_history(gardenID, name):
-    response = []
-    if name == "pump":
-        pump_info = pump.query.filter_by(gardenID=gardenID).all()
-        for data in pump_info:
-            cur_data = data.as_dict()
-            response.append(cur_data)
-    else:
-        light_info = light.query.filter_by(gardenID=gardenID).all()
-        for data in light_info:
-            cur_data = data.as_dict()
-            response.append(cur_data)
+@main.route("/user/device_history/<string:gardenID>")
+def get_device_history(gardenID):
+    response = {"pump": [], "light": []}
+    
+    pump_info = pump.query.filter_by(gardenID=gardenID).all()
+    for data in pump_info:
+        cur_data = data.as_dict()
+        response["pump"].append(cur_data)
+
+    light_info = light.query.filter_by(gardenID=gardenID).all()
+    for data in light_info:
+        cur_data = data.as_dict()
+        response["light"].append(cur_data)
 
     return jsonify(response)
 

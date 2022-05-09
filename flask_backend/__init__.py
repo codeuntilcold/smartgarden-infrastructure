@@ -20,7 +20,7 @@ app.register_blueprint(main, url_prefix='/')
 app.register_blueprint(admin, url_prefix='/admin')
 
 # SOCKET INIT
-socketio = SocketIO(app, cors_allowed_origins='*')
+socketio = SocketIO(app, cors_allowed_origins='*', message_queue='redis://')
 jwt = JWTManager(app)
 
 @socketio.on('connect')

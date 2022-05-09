@@ -1,5 +1,4 @@
 import json
-from flask import jsonify
 from flask_backend.config import *
 from Adafruit_IO import MQTTClient, Client
 import sys
@@ -70,6 +69,8 @@ def message(_client, feed_id, payload):
                 new_line = measure(ele)
                 db.session.add(new_line)
                 db.session.commit()
+            # "Broadcast" payload from feed_id to feed_id listeners
+            flask_backend.socketio.emit(feed_id, payload)
     else:
         print("out")
         flask_backend.socketio.emit(feed_id, "There is a problem with the data")

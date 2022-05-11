@@ -81,5 +81,5 @@ def user_login():
                     "is_admin": user.is_admin
                 }, 
                 expires_delta=expire)
-            return jsonify(success=True, access_token=access_token)
+            return jsonify(success=True, access_token=access_token, ID=user.ID, is_admin=user.is_admin)
     return jsonify(access_token=None, success=False)

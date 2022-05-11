@@ -343,7 +343,7 @@ def pushDatatoPostgres():
     arr_data = {}
     for feed in AIO_FEED_IDS:
         if feed == "bbc-test-json":
-            df = pd.read_csv('C:/Users/Acer/Desktop/HK212/project_AI/data_clear.csv')
+            df = pd.read_csv('../data/data_clean.csv')
             df = df[::-1]
             data = []
             for i in range(len(df)):

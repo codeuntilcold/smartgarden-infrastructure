@@ -41,6 +41,7 @@ def addAdmin():
 
 @admin.route("/push", methods=["POST"])
 def pushDatatoPostgres():
+    import datetime
     arr_data = {}
     for feed in ConfigClass.AIO_FEED_IDS:
         if feed == "bbc-test-json":

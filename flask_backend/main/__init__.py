@@ -53,7 +53,9 @@ def message(_client, feed_id, payload):
 
     gardenID = 1 # the first garden
     payload = json.loads(payload)
-    if int(payload["temp"]) >= lower_iqr_t and int(payload["temp"]) <= upper_iqr_t and int(payload["humid"]) >= lower_iqr_h and int(payload["humid"]) <= upper_iqr_h and int(payload["light"]) >= lower_iqr_l and int(payload["light"]) <= upper_iqr_l:
+    if float(payload["temp"]) >= lower_iqr_t and float(payload["temp"]) <= upper_iqr_t and \
+        float(payload["humid"]) >= lower_iqr_h and float(payload["humid"]) <= upper_iqr_h and \
+        float(payload["light"]) >= lower_iqr_l and float(payload["light"]) <= upper_iqr_l:
 
         # "Broadcast" payload from feed_id to feed_id listeners
         flask_backend.socketio.emit(feed_id, payload)
